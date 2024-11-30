@@ -1,0 +1,51 @@
+
+
+--create table STAGING_PATIENTRECORDS
+
+CREATE OR REPLACE TABLE STAGING_PATIENTRECORDS(
+    PatientID INT IDENTITY(1, 1),            -- Unique patient identifier
+    Name STRING,                           -- Patient name
+    Diagnosis STRING,                      -- Diagnosis description
+    AdmissionDate DATE,                    -- Admission date
+    DischargeDate DATE,                    -- Discharge date
+    Region STRING,                         -- Region or hospital location
+    Age INT,                               -- Patient's age
+    TotalBill FLOAT,                       -- Total bill amount
+    InsuranceProvider STRING               -- Insurance provider
+);
+
+--Insert Sample Data
+
+INSERT INTO HealthcareDB.Patients.STAGING_PATIENTRECORDS(Name, Diagnosis, AdmissionDate, DischargeDate, Region, Age, TotalBill, InsuranceProvider) VALUES
+('Alice Smith', 'Hypertension', '2024-01-10', '2024-01-15', 'North', 45, 1200.50, 'Provider A'),
+('Bob Johnson', 'Diabetes', '2024-02-01', '2024-02-10', 'South', 50, 1500.75, 'Provider B'),
+('Charlie Brown', 'Asthma', '2024-03-05', NULL, 'East', 29, NULL, 'Provider A'),
+('Diana Prince', 'Pneumonia', '2024-04-20', '2024-04-30', 'West', 38, 2000.00, 'Provider C'),
+('Eve White', 'Migraine', '2024-05-10', '2024-05-12', 'North', 32, 800.00, 'Provider B');
+
+--check records are Added
+
+SELECT * FROM STAGING_PATIENTRECORDS
+
+--create stream
+
+CREATE STREAM PATIENTUPDATES ON TABLE STAGING_PATIENTRECORDS
+
+--check stream has all records from STAGING_PATIENTRECORDS table
+
+SELECT * FROM PATIENTUPDATES
+
+-- Create Final_PatientsRecords table to load data into using task
+
+create or replace table HEALTHCAREDB.PATIENTS.Final_PatientsRecords (Name, Diagnosis, AdmissionDate, DischargeDate, Region, Age, TotalBill, InsuranceProvider) ;
+
+-- Task to load daily report
+CREATE OR REPLACE TASK DailyReport
+WAREHOUSE = 'COMPUTE_WH'
+SCHEDULE = '2 MINUTE'
+AS 
+INSERT INTO Final_PatientsRecords
+SELECT Diagnosis, COUNT(*) AS PatientCount
+FROM PATIENTRECORDS
+GROUP BY Diagnosis;
+
