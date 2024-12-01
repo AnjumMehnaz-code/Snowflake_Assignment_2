@@ -1,0 +1,41 @@
+
+
+--Query Optimization with Clustering Keys
+Objective: Optimize a table by adding clustering keys.
+
+
+-- Step 1: Create Database and Schema
+CREATE DATABASE HealthcareDB;
+CREATE SCHEMA HealthcareDB.Patients;
+
+-- Step 2: Create Table for Patient Records
+CREATE OR REPLACE TABLE HealthcareDB.Patients.PatientRecords (
+    PatientID INT IDENTITY(1, 1),            -- Unique patient identifier
+    Name STRING,                           -- Patient name
+    Diagnosis STRING,                      -- Diagnosis description
+    AdmissionDate DATE,                    -- Admission date
+    DischargeDate DATE,                    -- Discharge date
+    Region STRING,                         -- Region or hospital location
+    Age INT,                               -- Patient's age
+    TotalBill FLOAT,                       -- Total bill amount
+    InsuranceProvider STRING               -- Insurance provider
+);
+
+-- Step 3: Insert Sample Data
+INSERT INTO HealthcareDB.Patients.PatientRecords (Name, Diagnosis, AdmissionDate, DischargeDate, Region, Age, TotalBill, InsuranceProvider) VALUES
+('Alice Smith', 'Hypertension', '2024-01-10', '2024-01-15', 'North', 45, 1200.50, 'Provider A'),
+('Bob Johnson', 'Diabetes', '2024-02-01', '2024-02-10', 'South', 50, 1500.75, 'Provider B'),
+('Charlie Brown', 'Asthma', '2024-03-05', NULL, 'East', 29, NULL, 'Provider A'),
+('Diana Prince', 'Pneumonia', '2024-04-20', '2024-04-30', 'West', 38, 2000.00, 'Provider C'),
+('Eve White', 'Migraine', '2024-05-10', '2024-05-12', 'North', 32, 800.00, 'Provider B');
+
+
+--Add clustering keys to the PatientRecords table based on AdmissionDate
+ALTER TABLE PATIENTRECORDS CLUSTER BY (AdmissionDate);
+
+-- Query clustering information 
+SELECT * FROM PATIENTRECORDS WHERE AdmissionDate = '2024-01-15';
+--Measure query performance improvement for a date range
+SELECT PARSE_JSON(SYSTEM$ESTIMATE_QUERY_ACCELERATION('01b8b5c9-0001-3904-0004-b28200049dde'));
+
+clustering statistics -- improved query performance
